@@ -34,6 +34,7 @@ import {
 import { detectAndMonitorBlooms, DetectAndMonitorBloomsOutput } from "@/ai/flows/detect-and-monitor-blooms"
 import type { Marker } from "./map"
 import { Progress } from "../ui/progress"
+import { Label } from "../ui/label"
 
 const FormSchema = z.object({
   location: z.string().min(2, {
@@ -52,6 +53,7 @@ type MonitorPanelProps = {
 export function MonitorPanel({ addMarker }: MonitorPanelProps) {
   const [isLoading, setIsLoading] = React.useState(false)
   const [result, setResult] = React.useState<DetectAndMonitorBloomsOutput | null>(null)
+  const [location, setLocation] = React.useState("California, USA");
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -67,6 +69,7 @@ export function MonitorPanel({ addMarker }: MonitorPanelProps) {
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     setIsLoading(true)
     setResult(null)
+    setLocation(data.location)
     try {
       const response = await detectAndMonitorBlooms({
         location: data.location,
@@ -170,42 +173,42 @@ export function MonitorPanel({ addMarker }: MonitorPanelProps) {
                 )}
               </Button>
             </form>
-             {result && (
-              <Card className="animate-in fade-in mt-6">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 font-headline">
-                    <Bot /> AI Analysis Result
-                  </CardTitle>
-                  <CardDescription>{form.getValues("location")}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="font-semibold text-lg">{result.bloomStatus}</p>
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <Label>Confidence Level</Label>
-                      <span className="text-sm font-medium text-primary">{(result.confidenceLevel * 100).toFixed(0)}%</span>
-                    </div>
-                    <Progress value={result.confidenceLevel * 100} />
-                  </div>
-                  <div>
-                    <Label>Data Sources</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {result.satelliteDataUsed.map((source) => (
-                        <div key={source} className="flex items-center gap-2 rounded-full border px-3 py-1 text-sm bg-secondary">
-                          <Satellite className="h-4 w-4 text-muted-foreground" />
-                          {source}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </Form>
         </CardContent>
       </Card>
+      {result && (
+        <Card className="animate-in fade-in mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 font-headline">
+              <Bot /> AI Analysis Result
+            </CardTitle>
+            <CardDescription>{location}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="font-semibold text-lg">{result.bloomStatus}</p>
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <Label>Confidence Level</Label>
+                <span className="text-sm font-medium text-primary">{(result.confidenceLevel * 100).toFixed(0)}%</span>
+              </div>
+              <Progress value={result.confidenceLevel * 100} />
+            </div>
+            <div>
+              <Label>Data Sources</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {result.satelliteDataUsed.map((source) => (
+                  <div key={source} className="flex items-center gap-2 rounded-full border px-3 py-1 text-sm bg-secondary">
+                    <Satellite className="h-4 w-4 text-muted-foreground" />
+                    {source}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
