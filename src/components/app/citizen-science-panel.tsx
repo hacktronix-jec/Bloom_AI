@@ -35,6 +35,9 @@ import {
 } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import type { Marker } from "./map"
+import { useUser, useFirestore } from "@/firebase"
+import { collection } from "firebase/firestore"
+import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 const FormSchema = z.object({
   location: z.string().min(2, {
@@ -42,6 +45,7 @@ const FormSchema = z.object({
   }),
   date: z.date(),
   notes: z.string().optional(),
+  species: z.string().min(2, { message: "Please specify a species."})
 })
 
 type CitizenSciencePanelProps = {
@@ -52,6 +56,8 @@ type CitizenSciencePanelProps = {
 export function CitizenSciencePanel({ addMarker }: CitizenSciencePanelProps) {
   const [isLoading, setIsLoading] = React.useState(false)
   const { toast } = useToast()
+  const { user } = useUser()
+  const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -59,26 +65,57 @@ export function CitizenSciencePanel({ addMarker }: CitizenSciencePanelProps) {
       location: "Central Park, NYC",
       date: new Date(),
       notes: "",
+      species: "Cherry Blossom",
     },
   })
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
+    if (!user || !firestore) {
+        toast({
+            variant: "destructive",
+            title: "Authentication Error",
+            description: "You must be logged in to submit a report.",
+        });
+        return;
+    }
+    
     setIsLoading(true)
-    // Mock submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLoading(false)
-    toast({
-      title: "Report Submitted!",
-      description: "Thank you for contributing to BloomWatch AI.",
-    })
-    addMarker({
-        lat: 40.785091,
-        lng: -73.968285,
-        name: data.location,
-        status: "Citizen Report",
-        icon: <MapPin className="text-blue-500" />
-    });
-    form.reset()
+
+    const reportsCollection = collection(firestore, 'citizenReports');
+    try {
+        await addDocumentNonBlocking(reportsCollection, {
+            userId: user.uid,
+            latitude: 40.785091 + (Math.random() - 0.5) * 0.1, // Add some jitter
+            longitude: -73.968285 + (Math.random() - 0.5) * 0.1, // Add some jitter
+            species: data.species,
+            reportDate: data.date.toISOString(),
+            notes: data.notes,
+            location: data.location,
+            validationStatus: "pending",
+        });
+
+        toast({
+          title: "Report Submitted!",
+          description: "Thank you for contributing to BloomWatch AI.",
+        })
+        addMarker({
+            lat: 40.785091,
+            lng: -73.968285,
+            name: data.location,
+            status: `Reported: ${data.species}`,
+            icon: <MapPin className="text-blue-500" />
+        });
+        form.reset()
+    } catch(e) {
+        console.error(e)
+        toast({
+            variant: "destructive",
+            title: "Submission Error",
+            description: "Could not submit your report. Please try again.",
+        })
+    } finally {
+        setIsLoading(false)
+    }
   }
 
   return (
@@ -101,6 +138,19 @@ export function CitizenSciencePanel({ addMarker }: CitizenSciencePanelProps) {
                     <FormLabel>Location of Sighting</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Central Park, NYC" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="species"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Plant Species</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Cherry Blossom" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -172,7 +222,7 @@ export function CitizenSciencePanel({ addMarker }: CitizenSciencePanelProps) {
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                 <Camera className="w-8 h-8 mb-3 text-muted-foreground" />
                                 <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                <p className="text-xs text-muted-foreground">SVG, PNG, JPG (MAX. 800x400px)</p>
+                                <p className="text-xs text-muted-foreground">PNG, JPG (MAX. 800x400px)</p>
                             </div>
                             <input id="dropzone-file" type="file" className="hidden" />
                         </label>

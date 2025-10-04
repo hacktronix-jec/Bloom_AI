@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from 'react';
-import { Flower, Leaf, MapPin, Search } from 'lucide-react';
+import Link from 'next/link';
+import { Flower, Leaf, MapPin, Search, LogIn } from 'lucide-react';
 import { Header } from '@/components/app/header';
 import { MapComponent, type Marker } from '@/components/app/map';
 import { MonitorPanel } from '@/components/app/monitor-panel';
@@ -23,6 +24,8 @@ import {
 } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import { useUser } from '@/firebase';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 // Initial hotspots to display on the map
 const initialHotspots: Marker[] = [
@@ -34,6 +37,7 @@ const initialHotspots: Marker[] = [
 
 export default function Home() {
   const [markers, setMarkers] = React.useState<Marker[]>(initialHotspots);
+  const { user } = useUser();
 
   const addMarker = (marker: Omit<Marker, 'id'>) => {
     setMarkers(prev => [...prev, { ...marker, id: String(Date.now()) }]);
@@ -46,9 +50,9 @@ export default function Home() {
         className="flex flex-col bg-card border-r"
       >
         <SidebarHeader className="p-4">
-          <h2 className="font-headline text-2xl font-bold tracking-tight text-primary">
+          <Link href="/" className="font-headline text-2xl font-bold tracking-tight text-primary">
             BloomWatch AI
-          </h2>
+          </Link>
         </SidebarHeader>
         <SidebarContent className="p-0 flex-1">
           <Tabs defaultValue="monitor" className="flex flex-col h-full">
@@ -72,7 +76,26 @@ export default function Home() {
                 <ForecastPanel addMarker={addMarker} />
               </TabsContent>
               <TabsContent value="citizen" className="mt-0 p-4">
-                <CitizenSciencePanel addMarker={addMarker} />
+                {user ? (
+                  <CitizenSciencePanel addMarker={addMarker} />
+                ) : (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Join the Community</CardTitle>
+                      <CardDescription>
+                        Sign in to report sightings and help map bloom events.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button asChild className="w-full">
+                        <Link href="/login">
+                          <LogIn className="mr-2 h-4 w-4" />
+                          Login to Report
+                        </Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
             </div>
           </Tabs>

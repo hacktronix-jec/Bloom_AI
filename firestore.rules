@@ -1,77 +1,62 @@
 /**
- * @fileoverview Firestore Security Rules for BloomWatch AI.
- *
- * Core Philosophy:
- * This ruleset provides open read access and restricts write access to the bloomEvents, predictionModels, satelliteData, and citizenReports collections.
- * Since there's no user authentication or profiles in this version, write operations are disabled.
- *
- * Data Structure:
- * The data is stored in top-level collections: /bloomEvents/{bloomEventId}, /predictionModels/{predictionModelId}, /satelliteData/{satelliteDataId}, and /citizenReports/{citizenReportId}.
- *
- * Key Security Decisions:
- * - No user-specific data or authentication is used.
- * - Read access is open to everyone.
- * - Write access is denied.
- * - No data validation is performed in this prototype.
+ * @description This ruleset allows public read access to all collections, but restricts write access.
+ *   Since there's no user authentication or ownership, all data is treated as public and any user can attempt to write data.
+ *   However, since there are no ownership fields, all writes are denied to protect the data.
+ * @dataStructure Top-level collections are used for `bloomEvents`, `predictionModels`, `satelliteData`, and `citizenReports`.
+ * @keySecurityDecisions No user listing is explicitly denied as this functionality does not exist in the application.
+ *   All write access is disabled by default due to the lack of user authentication and ownership.
+ * @denormalization None is required as there is no user-specific data or authorization.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows open read access to bloom event data, but denies all write operations.
+     * @description Allows public read access to bloom events, but restricts write access.
      * @path /bloomEvents/{bloomEventId}
-     * @allow (get, list): if true
-     * @deny (create, update, delete): Always
-     * @principle Allows public read access while preventing unauthorized data modification.
+     * @allow (get, list) Any user can read bloom event data.
+     * @deny (create, update, delete) All writes are denied because there is no user authentication or ownership.
+     * @principle Public read, no writes allowed.
      */
     match /bloomEvents/{bloomEventId} {
       allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows open read access to prediction model data, but denies all write operations.
+     * @description Allows public read access to prediction models, but restricts write access.
      * @path /predictionModels/{predictionModelId}
-     * @allow (get, list): if true
-     * @deny (create, update, delete): Always
-     * @principle Allows public read access while preventing unauthorized data modification.
+     * @allow (get, list) Any user can read prediction model data.
+     * @deny (create, update, delete) All writes are denied because there is no user authentication or ownership.
+     * @principle Public read, no writes allowed.
      */
     match /predictionModels/{predictionModelId} {
       allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows open read access to satellite data, but denies all write operations.
+     * @description Allows public read access to satellite data, but restricts write access.
      * @path /satelliteData/{satelliteDataId}
-     * @allow (get, list): if true
-     * @deny (create, update, delete): Always
-     * @principle Allows public read access while preventing unauthorized data modification.
+     * @allow (get, list) Any user can read satellite data.
+     * @deny (create, update, delete) All writes are denied because there is no user authentication or ownership.
+     * @principle Public read, no writes allowed.
      */
     match /satelliteData/{satelliteDataId} {
       allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows open read access to citizen reports, but denies all write operations.
+     * @description Allows public read access to citizen reports, but restricts write access.
      * @path /citizenReports/{citizenReportId}
-     * @allow (get, list): if true
-     * @deny (create, update, delete): Always
-     * @principle Allows public read access while preventing unauthorized data modification.
+     * @allow (get, list) Any user can read citizen reports.
+     * @deny (create, update, delete) All writes are denied because there is no user authentication or ownership.
+     * @principle Public read, no writes allowed.
      */
     match /citizenReports/{citizenReportId} {
       allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow create, update, delete: if false;
     }
   }
 }

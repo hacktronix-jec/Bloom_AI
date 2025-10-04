@@ -142,6 +142,10 @@
           "type": "string",
           "description": "Unique identifier for the citizen report."
         },
+        "userId": {
+          "type": "string",
+          "description": "ID of the user who submitted the report."
+        },
         "latitude": {
           "type": "number",
           "description": "Latitude of the reported bloom event."
@@ -181,10 +185,45 @@
       },
       "required": [
         "id",
+        "userId",
         "latitude",
         "longitude",
         "species",
         "reportDate"
+      ]
+    },
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Stores user profile information.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the user's profile picture."
+        },
+        "lastLogin": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The last time the user logged in."
+        }
+      },
+      "required": [
+        "uid"
       ]
     }
   },
@@ -196,6 +235,20 @@
   },
   "firestore": {
     "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/entities/UserProfile"
+          },
+          "description": "Stores user profile information. Users can read and write their own profile.",
+          "rules": {
+            "read": "request.auth.uid == userId",
+            "write": "request.auth.uid == userId"
+          }
+        }
+      },
       {
         "path": "/bloomEvents/{bloomEventId}",
         "definition": {
@@ -251,7 +304,11 @@
           "schema": {
             "$ref": "#/backend/entities/CitizenReport"
           },
-          "description": "Stores bloom event reports submitted by citizen scientists. No specific authorization fields are needed as there is no user-specific data.",
+          "description": "Stores bloom event reports submitted by citizen scientists. Users can create their own reports and read all reports.",
+          "rules": {
+              "read": "request.auth != null",
+              "create": "request.auth.uid == request.resource.data.userId"
+          },
           "params": [
             {
               "name": "citizenReportId",
