@@ -170,42 +170,42 @@ export function MonitorPanel({ addMarker }: MonitorPanelProps) {
                 )}
               </Button>
             </form>
+             {result && (
+              <Card className="animate-in fade-in mt-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 font-headline">
+                    <Bot /> AI Analysis Result
+                  </CardTitle>
+                  <CardDescription>{form.getValues("location")}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <p className="font-semibold text-lg">{result.bloomStatus}</p>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <Label>Confidence Level</Label>
+                      <span className="text-sm font-medium text-primary">{(result.confidenceLevel * 100).toFixed(0)}%</span>
+                    </div>
+                    <Progress value={result.confidenceLevel * 100} />
+                  </div>
+                  <div>
+                    <Label>Data Sources</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {result.satelliteDataUsed.map((source) => (
+                        <div key={source} className="flex items-center gap-2 rounded-full border px-3 py-1 text-sm bg-secondary">
+                          <Satellite className="h-4 w-4 text-muted-foreground" />
+                          {source}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </Form>
         </CardContent>
       </Card>
-      {result && (
-        <Card className="animate-in fade-in">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-headline">
-              <Bot /> AI Analysis Result
-            </CardTitle>
-            <CardDescription>{form.getValues("location")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="font-semibold text-lg">{result.bloomStatus}</p>
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <FormLabel>Confidence Level</FormLabel>
-                <span className="text-sm font-medium text-primary">{(result.confidenceLevel * 100).toFixed(0)}%</span>
-              </div>
-              <Progress value={result.confidenceLevel * 100} />
-            </div>
-            <div>
-              <FormLabel>Data Sources</FormLabel>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {result.satelliteDataUsed.map((source) => (
-                  <div key={source} className="flex items-center gap-2 rounded-full border px-3 py-1 text-sm bg-secondary">
-                    <Satellite className="h-4 w-4 text-muted-foreground" />
-                    {source}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }
