@@ -217,9 +217,9 @@
           "description": "URL of the user's profile picture."
         },
         "lastLogin": {
-            "type": "string",
-            "format": "date-time",
-            "description": "The last time the user logged in."
+          "type": "string",
+          "format": "date-time",
+          "description": "The last time the user logged in."
         }
       },
       "required": [
@@ -234,90 +234,35 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "UserProfile",
-          "schema": {
-            "$ref": "#/entities/UserProfile"
-          },
-          "description": "Stores user profile information. Users can read and write their own profile.",
-          "rules": {
-            "read": "request.auth.uid == userId",
-            "write": "request.auth.uid == userId"
-          }
-        }
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
       },
-      {
-        "path": "/bloomEvents/{bloomEventId}",
-        "definition": {
-          "entityName": "BloomEvent",
-          "schema": {
-            "$ref": "#/backend/entities/BloomEvent"
-          },
-          "description": "Stores bloom event data detected or reported.  No specific authorization fields are needed as there is no user-specific data.",
-          "params": [
-            {
-              "name": "bloomEventId",
-              "description": "Unique identifier for the bloom event."
-            }
-          ]
-        }
+      "description": "Stores user profile information. Users can read and write their own profile."
+    },
+    "/bloomEvents/{bloomEventId}": {
+      "schema": {
+        "$ref": "#/entities/BloomEvent"
       },
-      {
-        "path": "/predictionModels/{predictionModelId}",
-        "definition": {
-          "entityName": "PredictionModel",
-          "schema": {
-            "$ref": "#/backend/entities/PredictionModel"
-          },
-          "description": "Stores AI prediction model data. No specific authorization fields are needed as there is no user-specific data.",
-          "params": [
-            {
-              "name": "predictionModelId",
-              "description": "Unique identifier for the prediction model."
-            }
-          ]
-        }
+      "description": "Stores bloom event data detected or reported.  No specific authorization fields are needed as there is no user-specific data."
+    },
+    "/predictionModels/{predictionModelId}": {
+      "schema": {
+        "$ref": "#/entities/PredictionModel"
       },
-      {
-        "path": "/satelliteData/{satelliteDataId}",
-        "definition": {
-          "entityName": "SatelliteData",
-          "schema": {
-            "$ref": "#/backend/entities/SatelliteData"
-          },
-          "description": "Stores satellite data and climate model datasets. No specific authorization fields are needed as there is no user-specific data.",
-          "params": [
-            {
-              "name": "satelliteDataId",
-              "description": "Unique identifier for the satellite data entry."
-            }
-          ]
-        }
+      "description": "Stores AI prediction model data. No specific authorization fields are needed as there is no user-specific data."
+    },
+    "/satelliteData/{satelliteDataId}": {
+      "schema": {
+        "$ref": "#/entities/SatelliteData"
       },
-      {
-        "path": "/citizenReports/{citizenReportId}",
-        "definition": {
-          "entityName": "CitizenReport",
-          "schema": {
-            "$ref": "#/backend/entities/CitizenReport"
-          },
-          "description": "Stores bloom event reports submitted by citizen scientists. Users can create their own reports and read all reports.",
-          "rules": {
-              "read": "request.auth != null",
-              "create": "request.auth.uid == request.resource.data.userId"
-          },
-          "params": [
-            {
-              "name": "citizenReportId",
-              "description": "Unique identifier for the citizen report."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The Firestore structure is designed to store and manage bloom event data, prediction models, satellite data, and citizen reports for the BloomWatch AI application. Given that there's no user login page or profile, and thus no user-specific data, the data is stored in top-level collections. This approach simplifies data access and management since there are no user-specific permissions to consider.  Authorization Independence is achieved as there is no dependency between documents, and no complex authorization rules are required beyond basic data validation. The segregation of data types into distinct collections (`bloomEvents`, `predictionModels`, `satelliteData`, `citizenReports`) facilitates QAPs by enabling efficient and secure querying and listing of each data type."
+      "description": "Stores satellite data and climate model datasets. No specific authorization fields are needed as there is no user-specific data."
+    },
+    "/citizenReports/{citizenReportId}": {
+      "schema": {
+        "$ref": "#/entities/CitizenReport"
+      },
+      "description": "Stores bloom event reports submitted by citizen scientists. Users can create their own reports and read all reports."
+    }
   }
 }
