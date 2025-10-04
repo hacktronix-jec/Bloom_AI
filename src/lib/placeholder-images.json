@@ -1,3 +1,22 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "map-background",
+      "description": "A world map background for the interactive display.",
+      "imageUrl": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx3b3JsZCUyMG1hcHxlbnwwfHx8fDE3NTk1MzYwODJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "world map"
+    },
+    {
+      "id": "citizen-science-1",
+      "description": "Citizen science report image of flowers.",
+      "imageUrl": "https://images.unsplash.com/photo-1624953504949-6c4f45e06ac4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx3aWxkZmxvd2VycyUyMGZpZWxkfGVufDB8fHx8MTc1OTUwNDE4Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wildflowers field"
+    },
+    {
+      "id": "citizen-science-2",
+      "description": "Citizen science report image of a blooming tree.",
+      "imageUrl": "https://images.unsplash.com/photo-1526344966-89049886b28d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjaGVycnklMjBibG9zc29tfGVufDB8fHx8MTc1OTU1NzI1M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cherry blossom"
+    }
+  ]
 }
