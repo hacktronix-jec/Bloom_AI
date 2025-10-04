@@ -24,8 +24,6 @@ import {
 } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { useUser } from '@/firebase';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 // Initial hotspots to display on the map
 const initialHotspots: Marker[] = [
@@ -37,7 +35,6 @@ const initialHotspots: Marker[] = [
 
 export default function Home() {
   const [markers, setMarkers] = React.useState<Marker[]>(initialHotspots);
-  const { user } = useUser();
 
   const addMarker = (marker: Omit<Marker, 'id'>) => {
     setMarkers(prev => [...prev, { ...marker, id: String(Date.now()) }]);
@@ -76,21 +73,7 @@ export default function Home() {
                 <ForecastPanel addMarker={addMarker} />
               </TabsContent>
               <TabsContent value="citizen" className="mt-0 p-4">
-                {user ? (
-                  <CitizenSciencePanel addMarker={addMarker} />
-                ) : (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Join the Community</CardTitle>
-                      <CardDescription>
-                        Sign in to report sightings and help map bloom events. Guests can also report.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <CitizenSciencePanel addMarker={addMarker} />
-                    </CardContent>
-                  </Card>
-                )}
+                <CitizenSciencePanel addMarker={addMarker} />
               </TabsContent>
             </div>
           </Tabs>

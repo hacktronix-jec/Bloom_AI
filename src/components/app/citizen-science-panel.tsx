@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import type { Marker } from "./map"
-import { useUser, useFirestore } from "@/firebase"
+import { useFirestore } from "@/firebase"
 import { collection } from "firebase/firestore"
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
@@ -56,7 +56,6 @@ type CitizenSciencePanelProps = {
 export function CitizenSciencePanel({ addMarker }: CitizenSciencePanelProps) {
   const [isLoading, setIsLoading] = React.useState(false)
   const { toast } = useToast()
-  const { user } = useUser()
   const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -70,11 +69,11 @@ export function CitizenSciencePanel({ addMarker }: CitizenSciencePanelProps) {
   })
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    if (!user || !firestore) {
+    if (!firestore) {
         toast({
             variant: "destructive",
-            title: "Authentication Error",
-            description: "You must be logged in to submit a report.",
+            title: "Database Error",
+            description: "Could not connect to the database.",
         });
         return;
     }
@@ -84,7 +83,7 @@ export function CitizenSciencePanel({ addMarker }: CitizenSciencePanelProps) {
     const reportsCollection = collection(firestore, 'citizenReports');
     try {
         await addDocumentNonBlocking(reportsCollection, {
-            userId: user.uid,
+            userId: 'anonymous',
             latitude: 40.785091 + (Math.random() - 0.5) * 0.1, // Add some jitter
             longitude: -73.968285 + (Math.random() - 0.5) * 0.1, // Add some jitter
             species: data.species,
