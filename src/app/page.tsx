@@ -83,16 +83,11 @@ export default function Home() {
                     <CardHeader>
                       <CardTitle>Join the Community</CardTitle>
                       <CardDescription>
-                        Sign in to report sightings and help map bloom events.
+                        Sign in to report sightings and help map bloom events. Guests can also report.
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <Button asChild className="w-full">
-                        <Link href="/login">
-                          <LogIn className="mr-2 h-4 w-4" />
-                          Login to Report
-                        </Link>
-                      </Button>
+                      <CitizenSciencePanel addMarker={addMarker} />
                     </CardContent>
                   </Card>
                 )}
