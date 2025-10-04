@@ -1,0 +1,77 @@
+/**
+ * @fileoverview Firestore Security Rules for BloomWatch AI.
+ *
+ * Core Philosophy:
+ * This ruleset provides open read access and restricts write access to the bloomEvents, predictionModels, satelliteData, and citizenReports collections.
+ * Since there's no user authentication or profiles in this version, write operations are disabled.
+ *
+ * Data Structure:
+ * The data is stored in top-level collections: /bloomEvents/{bloomEventId}, /predictionModels/{predictionModelId}, /satelliteData/{satelliteDataId}, and /citizenReports/{citizenReportId}.
+ *
+ * Key Security Decisions:
+ * - No user-specific data or authentication is used.
+ * - Read access is open to everyone.
+ * - Write access is denied.
+ * - No data validation is performed in this prototype.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Allows open read access to bloom event data, but denies all write operations.
+     * @path /bloomEvents/{bloomEventId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): Always
+     * @principle Allows public read access while preventing unauthorized data modification.
+     */
+    match /bloomEvents/{bloomEventId} {
+      allow get, list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Allows open read access to prediction model data, but denies all write operations.
+     * @path /predictionModels/{predictionModelId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): Always
+     * @principle Allows public read access while preventing unauthorized data modification.
+     */
+    match /predictionModels/{predictionModelId} {
+      allow get, list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Allows open read access to satellite data, but denies all write operations.
+     * @path /satelliteData/{satelliteDataId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): Always
+     * @principle Allows public read access while preventing unauthorized data modification.
+     */
+    match /satelliteData/{satelliteDataId} {
+      allow get, list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Allows open read access to citizen reports, but denies all write operations.
+     * @path /citizenReports/{citizenReportId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): Always
+     * @principle Allows public read access while preventing unauthorized data modification.
+     */
+    match /citizenReports/{citizenReportId} {
+      allow get, list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
