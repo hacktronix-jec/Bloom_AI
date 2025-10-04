@@ -1,22 +1,59 @@
 /**
- * @description This ruleset allows public read access to all collections, but restricts write access.
- *   Since there's no user authentication or ownership, all data is treated as public and any user can attempt to write data.
- *   However, since there are no ownership fields, all writes are denied to protect the data.
- * @dataStructure Top-level collections are used for `bloomEvents`, `predictionModels`, `satelliteData`, and `citizenReports`.
- * @keySecurityDecisions No user listing is explicitly denied as this functionality does not exist in the application.
- *   All write access is disabled by default due to the lack of user authentication and ownership.
- * @denormalization None is required as there is no user-specific data or authorization.
+ * @fileOverview Firestore Security Rules for the Bloom application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a user-ownership model for user profiles, allowing users to read and write their own profile data.
+ * Citizen reports can be created by any authenticated user and are publicly readable.
+ * Other data collections (bloomEvents, predictionModels, satelliteData) are publicly readable.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profile information.
+ * - /bloomEvents/{bloomEventId}: Stores bloom event data.
+ * - /predictionModels/{predictionModelId}: Stores AI prediction model data.
+ * - /satelliteData/{satelliteDataId}: Stores satellite data and climate model datasets.
+ * - /citizenReports/{citizenReportId}: Stores citizen science reports of bloom events.
+ *
+ * Key Security Decisions:
+ * - Users can only manage their own profiles.
+ * - Listing of users is not allowed.
+ * - Bloom events, prediction models, and satellite data are publicly readable.
+ * - Citizen reports can be created by any authenticated user.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows public read access to bloom events, but restricts write access.
+     * @description Controls access to user profile documents.
+     * @path /users/{userId}
+     * @allow (create) User with UID 'tFBnLE6iWCN93eFfxnWAY7QDa9D3' can create a profile with userId 'tFBnLE6iWCN93eFfxnWAY7QDa9D3'.
+     * @allow (get, update, delete) User with UID 'tFBnLE6iWCN93eFfxnWAY7QDa9D3' can read/update/delete their own profile.
+     * @deny (create) User with UID 'attackerUID' cannot create a profile with userId 'tFBnLE6iWCN93eFfxnWAY7QDa9D3'.
+     * @deny (get, update, delete) User with UID 'attackerUID' cannot read/update/delete the profile of user 'tFBnLE6iWCN93eFfxnWAY7QDa9D3'.
+     * @principle Enforces document ownership for writes; allows owner-only access.
+     */
+    match /users/{userId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false; // Listing users is not permitted
+
+      allow create: if isOwner(userId) && request.resource.data.uid == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.uid == resource.data.uid;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to bloom event documents. Bloom events can be read by anyone but cannot be created, updated or deleted without authentication
      * @path /bloomEvents/{bloomEventId}
      * @allow (get, list) Any user can read bloom event data.
-     * @deny (create, update, delete) All writes are denied because there is no user authentication or ownership.
-     * @principle Public read, no writes allowed.
+     * @deny (create, update, delete) No user can create, update, or delete bloom event data.
+     * @principle Allows public read access but restricts writes.
      */
     match /bloomEvents/{bloomEventId} {
       allow get, list: if true;
@@ -24,11 +61,11 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows public read access to prediction models, but restricts write access.
+     * @description Controls access to prediction model documents. Prediction models can be read by anyone but cannot be created, updated or deleted without authentication
      * @path /predictionModels/{predictionModelId}
      * @allow (get, list) Any user can read prediction model data.
-     * @deny (create, update, delete) All writes are denied because there is no user authentication or ownership.
-     * @principle Public read, no writes allowed.
+     * @deny (create, update, delete) No user can create, update, or delete prediction model data.
+     * @principle Allows public read access but restricts writes.
      */
     match /predictionModels/{predictionModelId} {
       allow get, list: if true;
@@ -36,11 +73,11 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows public read access to satellite data, but restricts write access.
+     * @description Controls access to satellite data documents. Satellite data can be read by anyone but cannot be created, updated or deleted without authentication
      * @path /satelliteData/{satelliteDataId}
      * @allow (get, list) Any user can read satellite data.
-     * @deny (create, update, delete) All writes are denied because there is no user authentication or ownership.
-     * @principle Public read, no writes allowed.
+     * @deny (create, update, delete) No user can create, update, or delete satellite data.
+     * @principle Allows public read access but restricts writes.
      */
     match /satelliteData/{satelliteDataId} {
       allow get, list: if true;
@@ -48,15 +85,28 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows public read access to citizen reports, but restricts write access.
+     * @description Controls access to citizen report documents.
      * @path /citizenReports/{citizenReportId}
      * @allow (get, list) Any user can read citizen reports.
-     * @deny (create, update, delete) All writes are denied because there is no user authentication or ownership.
-     * @principle Public read, no writes allowed.
+     * @allow (create) Any authenticated user can create citizen reports.
+     * @deny (update, delete) Only the report creator can update or delete citizen reports.
+     * @principle Allows public read and authenticated creation, but restricts updates and deletes to the creator.
      */
     match /citizenReports/{citizenReportId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      function isOwner() {
+        return request.auth != null && request.auth.uid == resource.data.userId;
+      }
+        function isExistingOwner() {
+        return isOwner() && resource != null;
+      }
+
       allow get, list: if true;
-      allow create, update, delete: if false;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid; // Only signed-in users can create, and userId must match auth.uid
+      allow update: if isExistingOwner();
+      allow delete: if isExistingOwner();
     }
   }
 }
